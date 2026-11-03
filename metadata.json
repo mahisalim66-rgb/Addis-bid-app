@@ -1,0 +1,6 @@
+{
+  "name": "Addis Bid",
+  "description": "አዲስ ቢድ (Addis Bid) - ዘመናዊ የጨረታ መድረክ ከዋሌትና ከአድሚን ማረጋገጫ ጋር",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
