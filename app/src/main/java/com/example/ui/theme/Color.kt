@@ -2,27 +2,28 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Telebirr & Chereta Branding Colors
-val TelebirrPrimary = Color(0xFF007A87) // Deep Ethiopian Cyan / Telebirr Teal
-val TelebirrPrimaryDark = Color(0xFF00565F)
-val TelebirrAccent = Color(0xFF00B4D8) // Electric Cyan
-val TelebirrGold = Color(0xFFF9A825) // Golden Coin / Auction Amber
-val TelebirrGoldDark = Color(0xFFC67C00)
-val TelebirrGreen = Color(0xFF2E7D32) // Verification / Approved Green
-val TelebirrRed = Color(0xFFD32F2F) // Outbid / Rejected Red
+// Telebirr & Ethiopian Vivid Branding Colors (አረንጓዴ፣ ቢጫ፣ ጥቁር፣ ሰማያዊ)
+val TelebirrPrimary = Color(0xFF0066CC) // Vivid Royal Telebirr Blue (ሰማያዊ)
+val TelebirrPrimaryDark = Color(0xFF004C99)
+val TelebirrAccent = Color(0xFF0284C7) // Sky Electric Blue
+val TelebirrGold = Color(0xFFFFB800) // Radiant Ethiopian Gold / Yellow (ቢጫ / ወርቅ)
+val TelebirrGoldDark = Color(0xFFD97706)
+val TelebirrGreen = Color(0xFF00A859) // Pure Ethiopian Emerald Green (አረንጓዴ)
+val TelebirrGreenLight = Color(0xFF10B981)
+val TelebirrRed = Color(0xFFEF4444) // Bright Alert Red
 
-// Background & Neutral Colors (Dark luxury fintech style)
-val DarkBackground = Color(0xFF0D171F)
-val DarkSurface = Color(0xFF142431)
-val DarkSurfaceVariant = Color(0xFF1C3142)
-val DarkCardBorder = Color(0xFF29455B)
+// Background & Contrast Surfaces (ጥቁር / ንፁህ ነጭ)
+val DarkBackground = Color(0xFF0B0F19) // Rich Jet Midnight Black (ጥቁር)
+val DarkSurface = Color(0xFF151D2E) // Deep Sapphire Navy Surface
+val DarkSurfaceVariant = Color(0xFF1E293B) // High contrast card surface
+val DarkCardBorder = Color(0xFF334155) // Crisp subtle border
 
-val LightBackground = Color(0xFFF4F7F9)
-val LightSurface = Color(0xFFFFFFFF)
-val LightSurfaceVariant = Color(0xFFE8EEF2)
-val LightCardBorder = Color(0xFFD1DCE5)
+val LightBackground = Color(0xFFF8FAFC) // Crisp clean canvas
+val LightSurface = Color(0xFFFFFFFF) // Pure White
+val LightSurfaceVariant = Color(0xFFF1F5F9)
+val LightCardBorder = Color(0xFFE2E8F0)
 
-val TextPrimaryDark = Color(0xFFF1F5F9)
+val TextPrimaryDark = Color(0xFFFFFFFF) // Bright Crisp White
 val TextSecondaryDark = Color(0xFF94A3B8)
 val TextPrimaryLight = Color(0xFF0F172A)
 val TextSecondaryLight = Color(0xFF475569)

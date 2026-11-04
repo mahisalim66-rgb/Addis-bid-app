@@ -75,8 +75,8 @@ fun AuctionListScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(TelebirrPrimaryDark, TelebirrPrimary)
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFF003875), Color(0xFF0066CC), Color(0xFF0284C7))
                             )
                         )
                         .padding(20.dp)

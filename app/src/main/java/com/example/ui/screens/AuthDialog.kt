@@ -34,32 +34,30 @@ fun AuthDialog(
     val context = LocalContext.current
     val repository = remember { CheretaRepository.getInstance() }
     val currentUser by repository.currentUser.collectAsState()
+    val isAdmin = repository.isAdminUser()
 
-    var isSignUp by remember { mutableStateOf(false) }
-    var nameInput by remember { mutableStateOf(currentUser.name) }
-    var phoneInput by remember { mutableStateOf(currentUser.phone) }
-    var emailInput by remember { mutableStateOf(currentUser.email) }
+    var phoneInput by remember { mutableStateOf(if (isAdmin) "0911000000" else currentUser.phone) }
     var pinInput by remember { mutableStateOf("1234") }
-    var asAdmin by remember { mutableStateOf(currentUser.role == UserRole.ADMIN) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             Button(
                 onClick = {
-                    if (asAdmin && !emailInput.trim().equals("mameboss98@gmail.com", ignoreCase = true)) {
+                    if (phoneInput.isBlank() || phoneInput.length < 9) {
                         Toast.makeText(
                             context,
-                            if (lang == Language.AMHARIC) "አድሚን መሆን የሚችለው mameboss98@gmail.com ብቻ ነው!" else "Admin is restricted to mameboss98@gmail.com only!",
-                            Toast.LENGTH_LONG
+                            if (lang == Language.AMHARIC) "ትክክለኛ ስልክ ቁጥር ያስገቡ" else "Please enter valid phone",
+                            Toast.LENGTH_SHORT
                         ).show()
                         return@Button
                     }
-                    repository.loginUser(nameInput, phoneInput, emailInput, asAdmin)
+                    val userName = if (phoneInput.contains("1234")) "አበበ ደስታ" else "ተጠቃሚ ${phoneInput.takeLast(4)}"
+                    repository.loginUser(userName, phoneInput, "", false)
                     onDismiss()
                     Toast.makeText(
                         context,
-                        if (asAdmin) "በአድሚንነት (mameboss98@gmail.com) ገብተዋል!" else "እንኳን ደህና መጡ ${nameInput.take(15)}!",
+                        if (lang == Language.AMHARIC) "እንኳን ደህና መጡ $userName!" else "Welcome $userName!",
                         Toast.LENGTH_SHORT
                     ).show()
                 },
@@ -68,10 +66,7 @@ fun AuthDialog(
                 modifier = Modifier.testTag("auth_submit_button")
             ) {
                 Text(
-                    text = if (isSignUp)
-                        (if (lang == Language.AMHARIC) "ይመዝገቡ" else "Register")
-                    else
-                        (if (lang == Language.AMHARIC) "ይግቡ" else "Log In"),
+                    text = if (lang == Language.AMHARIC) "ይግቡ" else "Log In",
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -88,10 +83,7 @@ fun AuthDialog(
             ) {
                 TelebirrLogoPill()
                 Text(
-                    text = if (isSignUp)
-                        (if (lang == Language.AMHARIC) "አዲስ መለያ መክፈቻ" else "Create Account")
-                    else
-                        (if (lang == Language.AMHARIC) "መግቢያ (Login)" else "User Login"),
+                    text = if (lang == Language.AMHARIC) "መግቢያ (Login)" else "User Login",
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -101,92 +93,131 @@ fun AuthDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = if (lang == Language.AMHARIC)
-                        "የቴሌብር ስልክ ቁጥርዎን በማስገባት ይጫረቱ ወይም ክፍያዎን ያስተዳድሩ።"
-                    else
-                        "Enter your Telebirr phone number to participate or manage bids.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                // Quick Switch presets for testing
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                // If already logged in as Admin, show banner
+                if (isAdmin) {
+                    Surface(
+                        color = Color(0xFFFEF3C7),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = if (lang == Language.AMHARIC) "ፈጣን መግቢያ (Quick Switch):" else "Quick Test Accounts:",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold
-                        )
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            OutlinedButton(
-                                onClick = {
-                                    nameInput = "አበበ ደስታ (Abebe Desta)"
-                                    phoneInput = "0912345678"
-                                    emailInput = ""
-                                    asAdmin = false
-                                },
-                                modifier = Modifier.weight(1f),
-                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
-                                shape = RoundedCornerShape(8.dp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Text(if (lang == Language.AMHARIC) "ተጫራች (Abebe)" else "Bidder (Abebe)", fontSize = 11.sp)
+                                Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = Color(0xFFB45309))
+                                Column {
+                                    Text(
+                                        text = if (lang == Language.AMHARIC) "ዋና አድሚን ነዎት" else "Active Admin",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF78350F)
+                                    )
+                                    Text(
+                                        text = "mameboss98@gmail.com",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF92400E)
+                                    )
+                                }
                             }
-
-                            Button(
+                            TextButton(
                                 onClick = {
-                                    nameInput = "Mame Boss"
-                                    phoneInput = "0911000000"
-                                    emailInput = "mameboss98@gmail.com"
-                                    asAdmin = true
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = TelebirrGold),
-                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
-                                shape = RoundedCornerShape(8.dp)
+                                    repository.logoutAdmin()
+                                    Toast.makeText(context, if (lang == Language.AMHARIC) "ከአድሚን ወጥተዋል" else "Logged out", Toast.LENGTH_SHORT).show()
+                                }
                             ) {
-                                Text(if (lang == Language.AMHARIC) "አድሚን (Mame)" else "Admin (Mame)", fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                                Text(if (lang == Language.AMHARIC) "ውጣ" else "Logout", color = Color(0xFFDC2626), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                             }
                         }
                     }
                 }
 
-                if (isSignUp || asAdmin) {
-                    OutlinedTextField(
-                        value = nameInput,
-                        onValueChange = { nameInput = it },
-                        label = { Text(if (lang == Language.AMHARIC) "ሙሉ ስም" else "Full Name") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
+                // 1-Tap Quick Switch card
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = if (lang == Language.AMHARIC) "ፈጣን 1-ንክኪ መግቢያ (1-Tap Switch):" else "Instant 1-Tap Login:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    repository.loginUser("አበበ ደስታ (Abebe Desta)", "0912345678", "", false)
+                                    onDismiss()
+                                    Toast.makeText(
+                                        context,
+                                        if (lang == Language.AMHARIC) "በተጫራችነት ገብተዋል (አበበ ደስታ)" else "Logged in as Bidder",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(if (lang == Language.AMHARIC) "ተጫራች" else "Bidder", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
 
-                    OutlinedTextField(
-                        value = emailInput,
-                        onValueChange = { emailInput = it },
-                        label = { Text(if (asAdmin) "የአድሚን ኢሜይል (mameboss98@gmail.com)" else "ኢሜይል (Email)") },
-                        placeholder = { Text(if (asAdmin) "mameboss98@gmail.com" else "user@example.com") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
+                            Button(
+                                onClick = {
+                                    repository.loginAsAdminWithGoogleEmail("mameboss98@gmail.com")
+                                    onDismiss()
+                                    Toast.makeText(
+                                        context,
+                                        if (lang == Language.AMHARIC) "እንኳን ደህና መጡ አድሚን (mameboss98@gmail.com)!" else "Welcome Admin (Mame Boss)!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                modifier = Modifier.weight(1.2f),
+                                colors = ButtonDefaults.buttonColors(containerColor = TelebirrGold),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (lang == Language.AMHARIC) "አድሚን (Mame)" else "Admin (Mame)",
+                                    fontSize = 11.sp,
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+                        }
+                    }
                 }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                Text(
+                    text = if (lang == Language.AMHARIC) "ወይም በስልክ ቁጥርዎ ይግቡ፦" else "Or sign in with custom phone:",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 OutlinedTextField(
                     value = phoneInput,
                     onValueChange = { phoneInput = it },
                     label = { Text(if (lang == Language.AMHARIC) "የቴሌብር ስልክ ቁጥር" else "Telebirr Phone") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -197,31 +228,10 @@ fun AuthDialog(
                     label = { Text(if (lang == Language.AMHARIC) "የይለፍ ፒን (4 አሃዝ)" else "Security PIN (4 digits)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     visualTransformation = PasswordVisualTransformation(),
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextButton(onClick = { isSignUp = !isSignUp }) {
-                        Text(
-                            text = if (isSignUp)
-                                (if (lang == Language.AMHARIC) "መለያ አለዎት? ይግቡ" else "Have account? Log in")
-                            else
-                                (if (lang == Language.AMHARIC) "አዲስ መለያ ይክፈቱ" else "Need account? Sign up"),
-                            fontSize = 12.sp
-                        )
-                    }
-
-                    FilterChip(
-                        selected = asAdmin,
-                        onClick = { asAdmin = !asAdmin },
-                        label = { Text("Admin", fontSize = 11.sp) }
-                    )
-                }
             }
         }
     )

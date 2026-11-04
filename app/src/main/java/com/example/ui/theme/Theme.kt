@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-    primary = TelebirrAccent,
-    onPrimary = Color.Black,
+    primary = TelebirrPrimary,
+    onPrimary = Color.White,
     primaryContainer = TelebirrPrimaryDark,
     onPrimaryContainer = Color.White,
     secondary = TelebirrGold,
@@ -18,25 +18,27 @@ private val DarkColorScheme = darkColorScheme(
     secondaryContainer = TelebirrGoldDark,
     onSecondaryContainer = Color.White,
     tertiary = TelebirrGreen,
+    onTertiary = Color.White,
     background = DarkBackground,
     onBackground = TextPrimaryDark,
     surface = DarkSurface,
     onSurface = TextPrimaryDark,
     surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = TextSecondaryDark,
+    onSurfaceVariant = Color(0xFFCBD5E1),
     outline = DarkCardBorder
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = TelebirrPrimary,
     onPrimary = Color.White,
-    primaryContainer = TelebirrAccent,
-    onPrimaryContainer = Color.Black,
+    primaryContainer = Color(0xFFE0F2FE),
+    onPrimaryContainer = Color(0xFF0369A1),
     secondary = TelebirrGold,
     onSecondary = Color.Black,
-    secondaryContainer = Color(0xFFFFF3CD),
-    onSecondaryContainer = Color(0xFF664D03),
+    secondaryContainer = Color(0xFFFEF3C7),
+    onSecondaryContainer = Color(0xFF92400E),
     tertiary = TelebirrGreen,
+    onTertiary = Color.White,
     background = LightBackground,
     onBackground = TextPrimaryLight,
     surface = LightSurface,
