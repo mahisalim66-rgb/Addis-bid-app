@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "AuctionItem": {
+      "title": "AuctionItem",
+      "description": "An auction or giveaway item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "titleEn": { "type": "string" },
+        "titleAm": { "type": "string" },
+        "descriptionEn": { "type": "string" },
+        "descriptionAm": { "type": "string" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "currentBid": { "type": "number" },
+        "endTimeEpochMs": { "type": "number" },
+        "status": { "type": "string" },
+        "winnerId": { "type": "string" },
+        "winnerName": { "type": "string" }
+      },
+      "required": ["id", "titleAm", "category", "status"]
+    },
+    "BidRecord": {
+      "title": "BidRecord",
+      "description": "A bid record placed on an auction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "auctionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhone": { "type": "string" },
+        "amount": { "type": "number" },
+        "timestampEpochMs": { "type": "number" }
+      },
+      "required": ["id", "auctionId", "userId", "amount", "timestampEpochMs"]
+    },
+    "TelebirrTransaction": {
+      "title": "TelebirrTransaction",
+      "description": "Telebirr deposit or withdrawal transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhone": { "type": "string" },
+        "telebirrPhone": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string" },
+        "status": { "type": "string" },
+        "timestampEpochMs": { "type": "number" },
+        "note": { "type": "string" }
+      },
+      "required": ["id", "userId", "amount", "status", "timestampEpochMs"]
+    }
+  },
+  "firestore": {
+    "/auctions/{auctionId}": {
+      "schema": "AuctionItem",
+      "description": "All public auction items"
+    },
+    "/bids/{bidId}": {
+      "schema": "BidRecord",
+      "description": "Bids placed by users"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "TelebirrTransaction",
+      "description": "Telebirr verification transactions"
+    }
+  }
+}

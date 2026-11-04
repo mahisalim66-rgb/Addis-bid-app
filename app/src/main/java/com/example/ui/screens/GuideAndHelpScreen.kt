@@ -47,6 +47,7 @@ fun GuideAndHelpScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Hero Header (Addis Bid branding)
+        // Hero Header (Addis Bid branding)
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -69,7 +70,7 @@ fun GuideAndHelpScreen(
                             color = TelebirrPrimary
                         ) {
                             Icon(
-                                Icons.Default.Code,
+                                Icons.Default.HelpCenter,
                                 contentDescription = null,
                                 tint = Color.White,
                                 modifier = Modifier
@@ -92,9 +93,9 @@ fun GuideAndHelpScreen(
                             }
                             Text(
                                 text = if (lang == Language.AMHARIC)
-                                    "የ GitHub እና የቴሌብር መተግበሪያ መመሪያ"
+                                    "የአጠቃቀም መመሪያ እና የደንበኞች ድጋፍ"
                                 else
-                                    "GitHub & Telebirr Deployment Center",
+                                    "User Guide & Support Center",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -103,9 +104,9 @@ fun GuideAndHelpScreen(
 
                     Text(
                         text = if (lang == Language.AMHARIC)
-                            "ኮዱን በቀጥታ GitHub ላይ ለመጫን፣ ዌብሳይት ላይ ለማገናኘትና ምንም ሳያስተካክሉ ዝግጁ በሆነ መልኩ ለመጠቀም የተዘጋጀ መመሪያ።"
+                            "በአዲስ ቢድ መድረክ ላይ እንዴት እንደሚጫረቱ፣ በቴሌብር ዋሌትዎን እንዴት እንደሚሞሉ እና ሽልማቶችን እንዴት እንደሚረከቡ የሚገልጽ ሙሉ መመሪያ።"
                         else
-                            "Ready-to-deploy GitHub repository guide, zero manual adjustments required.",
+                            "Comprehensive guide on bidding, wallet top-ups with Telebirr, and claiming auction wins.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -113,109 +114,26 @@ fun GuideAndHelpScreen(
             }
         }
 
-        // GitHub Repository Box (as requested: "እንደ ዌብሳይት ጊትሃብ ላይ ምናምን ነገር እናድርገው... ማስተካክለው ነገር የለም")
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = CardDefaults.outlinedCardBorder()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(Icons.Default.CloudUpload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Text(
-                            text = if (lang == Language.AMHARIC) "GitHub & Website መመሪያ (ምንም ማስተካከል አይጠበቅብዎትም)" else "GitHub & Website Setup (Zero Adjustments)",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-
-                    Text(
-                        text = if (lang == Language.AMHARIC)
-                            "ይህ ሙሉ ኮድ ለ GitHub ዝግጁ ሆኖ ተዋቅሯል (.gitignore, README, Gradle configurations)። ምንም ነገር መለወጥ ሳያስፈልግዎ በቀጥታ GitHub ላይ መጫን ይችላሉ።"
-                        else
-                            "This codebase is fully preconfigured for GitHub (.gitignore, README, Kotlin Gradle). You can push immediately without changing files.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    // Git Commands snippet with Copy
-                    val gitCommands = """
-git init
-git add .
-git commit -m "Initial release of Addis Bid App"
-git branch -M main
-git remote add origin ${settings.githubRepoUrl}.git
-git push -u origin main
-                    """.trimIndent()
-
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(10.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Git Terminal Commands:",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                IconButton(
-                                    onClick = {
-                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                        clipboard.setPrimaryClip(ClipData.newPlainText("Git Commands", gitCommands))
-                                        Toast.makeText(context, "የትዕዛዝ ኮዶቹ ኮፒ ተደርገዋል!", Toast.LENGTH_SHORT).show()
-                                    }
-                                ) {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = MaterialTheme.colorScheme.primary)
-                                }
-                            }
-                            Text(
-                                text = gitCommands,
-                                fontSize = 12.sp,
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Section 1: Next Steps
+        // Section 1: How Bidding & Giveaways Work
         item {
             GuideExpandableCard(
-                icon = Icons.Default.DirectionsRun,
-                titleAm = "1. አሁን ፋይሎቹን ከወሰዱ በኋላ ወዴት ነው የሚሄዱት?",
-                titleEn = "1. Where do I go next after getting this app?",
+                icon = Icons.Default.Gavel,
+                titleAm = "1. በጨረታ እና በነፃ ስጦታዎች እንዴት መሳተፍ ይቻላል?",
+                titleEn = "1. How to participate in auctions and giveaways?",
                 contentAm = """
-                    • ደረጃ 1 (APK ማውረድ)፡ ከ AI Studio የላይኛው ሜኑ ወይም Settings በመግባት 'Download APK' ወይም 'Export Project' የሚለውን ይጫኑ። ይህ ዝግጁ የሆነውን የሞባይል መተግበሪያ (APK) ይሰጥዎታል።
+                    • ደረጃ 1 (ዋሌት መሙላት)፡ ወደ 'ዋሌት' ገጽ በመሄድ በሚታየው የቴሌብር ቁጥር ገንዘብ ያስገቡና የትራንዛክሽን ኮዱን ያስገቡ። አድሚን ሲያረጋግጥ ዋሌትዎ ይሞላል።
                     
-                    • ደረጃ 2 (በስልክዎ መሞከር)፡ የወረደውን .apk ፋይል በእርስዎ አንድሮይድ ስልክ ላይ ጭነው አዲስ ቢድ መተግበሪያን እና የአድሚን ፓነሉን በተግባር ይሞክሩት።
+                    • ደረጃ 2 (ጨረታ ማስገባት)፡ የሚፈልጉትን እቃ ይምረጡና 'ጨረታ አስገባ' የሚለውን ይጫኑ።
                     
-                    • ደረጃ 3 (ቴሌግራም ወይም GitHub ላይ ማሰራጨት)፡ የራስዎን የቴሌግራም ቻናል ከፍተው የ APK ፋይሉን ይልቀቁ ወይም በ GitHub Releases ገጽ ላይ ለተጠቃሚዎች ያጋሩ።
+                    • ደረጃ 3 (የሰዓት ቆጣሪ)፡ እያንዳንዱ እቃ የራሱ ሰዓት አለው፤ ሰዓቱ ሲያልቅ አሸናፊው በቅጽበት ይገለጻል።
                     
-                    • ደረጃ 4 (Google Play Store)፡ መተግበሪያውን በይፋ በፕሌይ ስቶር ለማሰራጨት የGoogle Play Console አካውንት ($25 አንድ ጊዜ ብቻ የሚከፈል) በመክፈት APK/AAB ፋይሉን ይጫኑ።
+                    • ደረጃ 4 (ሽልማት መረከብ)፡ አሸናፊ ከሆኑ የደንበኞች አገልግሎት በስልክ ደውሎ እቃውን በነፃ ያስረክብዎታል።
                 """.trimIndent(),
                 contentEn = """
-                    • Step 1 (Download APK): Export your ready-to-run APK from AI Studio Settings.
-                    • Step 2 (Test on Phone): Install the APK on your device to test Addis Bid features.
-                    • Step 3 (Share on Telegram or GitHub): Share your APK directly on your Telegram community channel or GitHub Releases.
-                    • Step 4 (Publish on Google Play): Register a Google Play Console account ($25 one-time fee) to publish to millions of Android users.
+                    • Step 1 (Fund Wallet): Navigate to Wallet and transfer funds via Telebirr.
+                    • Step 2 (Place Bid): Pick your desired item and tap Place Bid.
+                    • Step 3 (Live Countdown): Watch the live timer until the auction closes.
+                    • Step 4 (Claim Prize): Winners are contacted directly for free delivery in Addis Ababa.
                 """.trimIndent(),
                 lang = lang
             )
@@ -273,6 +191,7 @@ git push -u origin main
 
         // Jump to Admin Button
         item {
+            val isAdmin = repository.isAdminUser()
             Button(
                 onClick = onNavigateToAdmin,
                 modifier = Modifier
@@ -284,7 +203,10 @@ git push -u origin main
                 Icon(Icons.Default.AdminPanelSettings, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (lang == Language.AMHARIC) "ወደ አድሚን መቆጣጠሪያ ፓነል ሂድ" else "Go to Admin Panel Now",
+                    text = if (isAdmin)
+                        (if (lang == Language.AMHARIC) "ወደ አድሚን መቆጣጠሪያ ፓነል ሂድ" else "Go to Admin Panel")
+                    else
+                        (if (lang == Language.AMHARIC) "የአድሚን መግቢያ (mameboss98@gmail.com)" else "Admin Sign-In (mameboss98@gmail.com)"),
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp
                 )

@@ -32,12 +32,24 @@ class CheretaRepositoryTest {
     }
 
     @Test
-    fun testSwitchRole() {
+    fun testStrictAdminAccess() {
         val repository = CheretaRepository.getInstance()
-        repository.switchUserRole(UserRole.ADMIN)
-        assertEquals(UserRole.ADMIN, repository.currentUser.value.role)
 
-        repository.switchUserRole(UserRole.USER)
+        // 1. Unauthorized email should fail
+        val unauthorized = repository.loginAsAdminWithGoogleEmail("fakeuser@gmail.com")
+        assertEquals(false, unauthorized)
+        assertEquals(false, repository.isAdminUser())
+
+        // 2. Authorized admin email mameboss98@gmail.com succeeds
+        val authorized = repository.loginAsAdminWithGoogleEmail("mameboss98@gmail.com")
+        assertTrue(authorized)
+        assertTrue(repository.isAdminUser())
+        assertEquals(UserRole.ADMIN, repository.currentUser.value.role)
+        assertEquals("mameboss98@gmail.com", repository.currentUser.value.email)
+
+        // 3. Logout restores normal USER role
+        repository.logoutAdmin()
         assertEquals(UserRole.USER, repository.currentUser.value.role)
+        assertEquals(false, repository.isAdminUser())
     }
 }

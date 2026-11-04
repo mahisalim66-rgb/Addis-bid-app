@@ -145,10 +145,10 @@ fun AuctionListScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                             ) {
-                                Icon(Icons.Default.Code, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.HelpOutline, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = if (lang == Language.AMHARIC) "GitHub & መመሪያ" else "GitHub & Guide",
+                                    text = if (lang == Language.AMHARIC) "ደንቦችና እርዳታ" else "Rules & Help",
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 13.sp
                                 )

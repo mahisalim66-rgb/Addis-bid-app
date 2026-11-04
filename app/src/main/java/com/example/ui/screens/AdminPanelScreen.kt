@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.*
@@ -43,6 +44,18 @@ fun AdminPanelScreen(
     val auctions by repository.auctions.collectAsState()
     val settings by repository.settings.collectAsState()
     val currentUser by repository.currentUser.collectAsState()
+
+    val isAdmin = repository.isAdminUser()
+
+    if (!isAdmin) {
+        AdminLockGate(
+            lang = lang,
+            onLoginSuccess = {
+                Toast.makeText(context, if (lang == Language.AMHARIC) "እንኳን ደህና መጡ አድሚን!" else "Welcome Admin!", Toast.LENGTH_SHORT).show()
+            }
+        )
+        return
+    }
 
     var selectedTab by remember { mutableStateOf(0) }
     var showCreateAuctionDialog by remember { mutableStateOf(false) }
@@ -97,6 +110,7 @@ fun AdminPanelScreen(
                                     modifier = Modifier
                                         .padding(8.dp)
                                         .size(24.dp)
+                                        .testTag("admin_header_icon")
                                 )
                             }
                             Column {
@@ -106,29 +120,29 @@ fun AdminPanelScreen(
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Text(
-                                    text = if (lang == Language.AMHARIC) "የቴሌብር ማረጋገጫና የእቃዎች መቆጣጠሪያ" else "Approve Telebirr Deposits & Items",
+                                    text = "mameboss98@gmail.com",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
 
                         FilledTonalButton(
                             onClick = {
-                                repository.switchUserRole(
-                                    if (currentUser.role == UserRole.ADMIN) UserRole.USER else UserRole.ADMIN
-                                )
+                                repository.logoutAdmin()
                                 Toast.makeText(
                                     context,
-                                    if (currentUser.role == UserRole.ADMIN) "ወደ ተጠቃሚ ተቀይሯል" else "ወደ አድሚን ተቀይሯል",
+                                    if (lang == Language.AMHARIC) "ከአድሚን ወጥተዋል" else "Logged out from Admin",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             },
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.testTag("admin_logout_button")
                         ) {
                             Text(
-                                text = if (currentUser.role == UserRole.ADMIN) "Exit Admin" else "Admin",
+                                text = if (lang == Language.AMHARIC) "ውጣ" else "Exit Admin",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -889,3 +903,130 @@ fun PendingDepositCard(
         }
     }
 }
+
+@Composable
+fun AdminLockGate(
+    lang: Language,
+    onLoginSuccess: () -> Unit
+) {
+    val repository = remember { CheretaRepository.getInstance() }
+    var emailInput by remember { mutableStateOf("mameboss98@gmail.com") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .testTag("admin_lock_gate"),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = TelebirrGold.copy(alpha = 0.2f),
+                    modifier = Modifier.size(72.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.AdminPanelSettings,
+                            contentDescription = null,
+                            tint = Color(0xFFB45309),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                }
+
+                Text(
+                    text = if (lang == Language.AMHARIC) "የአድሚን መቆጣጠሪያ ፓነል" else "Admin Console",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = if (lang == Language.AMHARIC)
+                                "ይህ ገጽ የተፈቀደው ለዋናው አድሚን (mameboss98@gmail.com) ብቻ ነው።"
+                            else
+                                "This panel is strictly restricted to admin (mameboss98@gmail.com).",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = emailInput,
+                    onValueChange = {
+                        emailInput = it
+                        errorMessage = null
+                    },
+                    label = { Text(if (lang == Language.AMHARIC) "የአድሚን ጎግል ኢሜይል" else "Admin Google Email") },
+                    placeholder = { Text("mameboss98@gmail.com") },
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("admin_email_input"),
+                    isError = errorMessage != null,
+                    supportingText = errorMessage?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
+                )
+
+                Button(
+                    onClick = {
+                        val ok = repository.loginAsAdminWithGoogleEmail(emailInput)
+                        if (ok) {
+                            errorMessage = null
+                            onLoginSuccess()
+                        } else {
+                            errorMessage = if (lang == Language.AMHARIC)
+                                "ያልተፈቀደ ኢሜይል! ለአድሚኑ (mameboss98@gmail.com) ብቻ የተፈቀደ ነው።"
+                            else
+                                "Unauthorized email! Access permitted only for mameboss98@gmail.com"
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .testTag("admin_google_login_button"),
+                    colors = ButtonDefaults.buttonColors(containerColor = TelebirrPrimary),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Icon(Icons.Default.VerifiedUser, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (lang == Language.AMHARIC) "በጎግል ኢሜይል አድሚን ግባ" else "Sign In as Admin",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+

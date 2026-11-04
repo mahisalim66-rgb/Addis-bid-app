@@ -16,6 +16,7 @@ data class User(
     val phone: String,
     val balance: Double,
     val role: UserRole = UserRole.USER,
+    val email: String = "",
     val joinedDate: String = "2026-10-15"
 )
 
@@ -93,6 +94,6 @@ data class PlatformSettings(
     val telebirrShortcode: String = "889900",
     val platformFeePercent: Double = 0.0,
     val supportPhone: String = "0977112233",
-    val githubRepoUrl: String = "https://github.com/addisbid/addis-bid",
+    val supportEmail: String = "support@addisbid.et",
     val websiteUrl: String = "https://addisbid.et"
 )

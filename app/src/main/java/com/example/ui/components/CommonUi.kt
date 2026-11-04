@@ -35,7 +35,7 @@ object UiFormatters {
     fun formatETB(amount: Double): String {
         val formatter = NumberFormat.getNumberInstance(Locale.US)
         formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 0
+        formatter.minimumFractionDigits = 2
         return "${formatter.format(amount)} ብር"
     }
 
@@ -59,6 +59,29 @@ object UiFormatters {
     fun formatDate(epochMs: Long): String {
         val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
         return sdf.format(Date(epochMs))
+    }
+}
+
+@Composable
+fun GoldCoinBadge(
+    modifier: Modifier = Modifier,
+    size: androidx.compose.ui.unit.Dp = 22.dp
+) {
+    Surface(
+        modifier = modifier.size(size),
+        shape = CircleShape,
+        color = Color(0xFFFFD700),
+        border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFD97706))
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = "ብር",
+                fontSize = (size.value * 0.44).sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF78350F),
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 

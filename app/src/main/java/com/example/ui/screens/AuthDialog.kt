@@ -38,19 +38,28 @@ fun AuthDialog(
     var isSignUp by remember { mutableStateOf(false) }
     var nameInput by remember { mutableStateOf(currentUser.name) }
     var phoneInput by remember { mutableStateOf(currentUser.phone) }
+    var emailInput by remember { mutableStateOf(currentUser.email) }
     var pinInput by remember { mutableStateOf("1234") }
-    var asAdmin by remember { mutableStateOf(false) }
+    var asAdmin by remember { mutableStateOf(currentUser.role == UserRole.ADMIN) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             Button(
                 onClick = {
-                    repository.loginUser(nameInput, phoneInput, asAdmin)
+                    if (asAdmin && !emailInput.trim().equals("mameboss98@gmail.com", ignoreCase = true)) {
+                        Toast.makeText(
+                            context,
+                            if (lang == Language.AMHARIC) "አድሚን መሆን የሚችለው mameboss98@gmail.com ብቻ ነው!" else "Admin is restricted to mameboss98@gmail.com only!",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@Button
+                    }
+                    repository.loginUser(nameInput, phoneInput, emailInput, asAdmin)
                     onDismiss()
                     Toast.makeText(
                         context,
-                        if (asAdmin) "በአድሚንነት ገብተዋል!" else "እንኳን ደህና መጡ ${nameInput.take(15)}!",
+                        if (asAdmin) "በአድሚንነት (mameboss98@gmail.com) ገብተዋል!" else "እንኳን ደህና መጡ ${nameInput.take(15)}!",
                         Toast.LENGTH_SHORT
                     ).show()
                 },
@@ -126,6 +135,7 @@ fun AuthDialog(
                                 onClick = {
                                     nameInput = "አበበ ደስታ (Abebe Desta)"
                                     phoneInput = "0912345678"
+                                    emailInput = ""
                                     asAdmin = false
                                 },
                                 modifier = Modifier.weight(1f),
@@ -137,8 +147,9 @@ fun AuthDialog(
 
                             Button(
                                 onClick = {
-                                    nameInput = "አድሚን አስተዳዳሪ"
+                                    nameInput = "Mame Boss"
                                     phoneInput = "0911000000"
+                                    emailInput = "mameboss98@gmail.com"
                                     asAdmin = true
                                 },
                                 modifier = Modifier.weight(1f),
@@ -146,7 +157,7 @@ fun AuthDialog(
                                 contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text("Admin Mode", fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                                Text(if (lang == Language.AMHARIC) "አድሚን (Mame)" else "Admin (Mame)", fontSize = 11.sp, color = Color.Black, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -157,6 +168,15 @@ fun AuthDialog(
                         value = nameInput,
                         onValueChange = { nameInput = it },
                         label = { Text(if (lang == Language.AMHARIC) "ሙሉ ስም" else "Full Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = emailInput,
+                        onValueChange = { emailInput = it },
+                        label = { Text(if (asAdmin) "የአድሚን ኢሜይል (mameboss98@gmail.com)" else "ኢሜይል (Email)") },
+                        placeholder = { Text(if (asAdmin) "mameboss98@gmail.com" else "user@example.com") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )

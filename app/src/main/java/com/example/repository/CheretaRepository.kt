@@ -1,6 +1,10 @@
 package com.example.repository
 
 import com.example.model.*
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.SetOptions
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -10,9 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+const val ADMIN_EMAIL = "mameboss98@gmail.com"
+
 class CheretaRepository private constructor() {
 
     private val scope = CoroutineScope(Dispatchers.Default)
+    private var firestore: FirebaseFirestore? = null
+    private var auctionsListener: ListenerRegistration? = null
+    private var transactionsListener: ListenerRegistration? = null
 
     // Current App Language
     private val _language = MutableStateFlow(Language.AMHARIC)
@@ -24,8 +33,9 @@ class CheretaRepository private constructor() {
             id = "user_101",
             name = "አበበ ደስታ (Abebe Desta)",
             phone = "0912345678",
-            balance = 0.0, // Initial balance 0 as requested
-            role = UserRole.USER
+            balance = 0.0,
+            role = UserRole.USER,
+            email = ""
         )
     )
     val currentUser: StateFlow<User> = _currentUser.asStateFlow()
@@ -221,21 +231,65 @@ class CheretaRepository private constructor() {
         _language.value = lang
     }
 
-    fun switchUserRole(role: UserRole) {
+    fun isAdminUser(): Boolean {
         val user = _currentUser.value
-        _currentUser.value = user.copy(
-            role = role,
-            name = if (role == UserRole.ADMIN) "አዲስ ቢድ አድሚን (Addis Bid Admin)" else "አበበ ደስታ (Abebe Desta)"
+        return user.role == UserRole.ADMIN && user.email.trim().equals(ADMIN_EMAIL, ignoreCase = true)
+    }
+
+    fun loginAsAdminWithGoogleEmail(email: String): Boolean {
+        val clean = email.trim().lowercase()
+        if (clean == ADMIN_EMAIL.lowercase()) {
+            _currentUser.value = User(
+                id = "admin_mameboss",
+                name = "Mame Boss (አድሚን)",
+                phone = "0911000000",
+                balance = 50000.0,
+                role = UserRole.ADMIN,
+                email = ADMIN_EMAIL
+            )
+            return true
+        }
+        return false
+    }
+
+    fun logoutAdmin() {
+        _currentUser.value = User(
+            id = "user_101",
+            name = "አበበ ደስታ (Abebe Desta)",
+            phone = "0912345678",
+            balance = 0.0,
+            role = UserRole.USER,
+            email = ""
         )
     }
 
-    fun loginUser(name: String, phone: String, isAdmin: Boolean) {
+    fun switchUserRole(role: UserRole) {
+        val user = _currentUser.value
+        if (role == UserRole.ADMIN) {
+            // Strictly check if current user email is mameboss98@gmail.com
+            if (user.email.trim().equals(ADMIN_EMAIL, ignoreCase = true)) {
+                _currentUser.value = user.copy(
+                    role = UserRole.ADMIN,
+                    name = "Mame Boss (አድሚን)"
+                )
+            }
+        } else {
+            _currentUser.value = user.copy(
+                role = UserRole.USER,
+                name = if (user.name.contains("አድሚን")) "አበበ ደስታ (Abebe Desta)" else user.name
+            )
+        }
+    }
+
+    fun loginUser(name: String, phone: String, email: String = "", isAdmin: Boolean = false) {
+        val canBeAdmin = isAdmin && email.trim().equals(ADMIN_EMAIL, ignoreCase = true)
         _currentUser.value = User(
-            id = if (isAdmin) "admin_01" else "user_${UUID.randomUUID().toString().take(6)}",
-            name = name.ifBlank { if (isAdmin) "Addis Bid Admin" else "Addis Bid User" },
+            id = if (canBeAdmin) "admin_mameboss" else "user_${UUID.randomUUID().toString().take(6)}",
+            name = name.ifBlank { if (canBeAdmin) "Mame Boss (አድሚን)" else "Addis Bid User" },
             phone = phone.ifBlank { "0911000000" },
-            balance = 0.0,
-            role = if (isAdmin) UserRole.ADMIN else UserRole.USER
+            balance = if (canBeAdmin) 50000.0 else 0.0,
+            role = if (canBeAdmin) UserRole.ADMIN else UserRole.USER,
+            email = if (canBeAdmin) ADMIN_EMAIL else email.trim()
         )
     }
 
@@ -277,7 +331,31 @@ class CheretaRepository private constructor() {
         )
         _bids.value = listOf(bidRecord) + _bids.value
 
-        return BidResult.Success
+        return BidResult.Success.also {
+            firestore?.let { fs ->
+                try {
+                    val bidData = mapOf(
+                        "id" to bidRecord.id,
+                        "auctionId" to bidRecord.auctionId,
+                        "userId" to bidRecord.userId,
+                        "userName" to bidRecord.userName,
+                        "userPhone" to bidRecord.userPhone,
+                        "amount" to 0.0,
+                        "timestampEpochMs" to bidRecord.timestampEpochMs
+                    )
+                    fs.collection("bids").document(bidRecord.id).set(bidData)
+                    fs.collection("auctions").document(auctionId).update(
+                        mapOf(
+                            "highestBidderId" to user.id,
+                            "highestBidderName" to user.name,
+                            "totalBids" to (auction.totalBids + 1)
+                        )
+                    )
+                } catch (e: Exception) {
+                    Log.e("AddisBidRepo", "Error syncing bid to Firestore", e)
+                }
+            }
+        }
     }
 
     // Submit Telebirr Deposit by user
@@ -302,6 +380,28 @@ class CheretaRepository private constructor() {
             note = note
         )
         _transactions.value = listOf(newTx) + _transactions.value
+
+        firestore?.let { fs ->
+            try {
+                val txData = mapOf(
+                    "id" to newTx.id,
+                    "userId" to newTx.userId,
+                    "userName" to newTx.userName,
+                    "userPhone" to newTx.userPhone,
+                    "telebirrPhone" to newTx.telebirrPhone,
+                    "transactionId" to newTx.transactionId,
+                    "amount" to newTx.amount,
+                    "type" to newTx.type.name,
+                    "status" to newTx.status.name,
+                    "timestampEpochMs" to newTx.timestampEpochMs,
+                    "note" to newTx.note
+                )
+                fs.collection("transactions").document(newTx.id).set(txData)
+            } catch (e: Exception) {
+                Log.e("AddisBidRepo", "Error syncing deposit to Firestore", e)
+            }
+        }
+
         return newTx
     }
 
@@ -343,6 +443,20 @@ class CheretaRepository private constructor() {
                 balance = _currentUser.value.balance + tx.amount
             )
         }
+
+        firestore?.let { fs ->
+            try {
+                fs.collection("transactions").document(transactionId).update(
+                    mapOf(
+                        "status" to TransactionStatus.APPROVED.name,
+                        "note" to "Approved by Admin"
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("AddisBidRepo", "Error updating approval in Firestore", e)
+            }
+        }
+
         return true
     }
 
@@ -353,6 +467,20 @@ class CheretaRepository private constructor() {
             if (it.id == transactionId) it.copy(status = TransactionStatus.REJECTED, note = "Rejected: $reason") else it
         }
         _transactions.value = updatedTxList
+
+        firestore?.let { fs ->
+            try {
+                fs.collection("transactions").document(transactionId).update(
+                    mapOf(
+                        "status" to TransactionStatus.REJECTED.name,
+                        "note" to "Rejected: $reason"
+                    )
+                )
+            } catch (e: Exception) {
+                Log.e("AddisBidRepo", "Error updating rejection in Firestore", e)
+            }
+        }
+
         return true
     }
 
@@ -384,6 +512,27 @@ class CheretaRepository private constructor() {
             participationFee = 0.0
         )
         _auctions.value = listOf(newAuction) + _auctions.value
+
+        firestore?.let { fs ->
+            try {
+                val data = mapOf(
+                    "id" to newAuction.id,
+                    "titleEn" to newAuction.titleEn,
+                    "titleAm" to newAuction.titleAm,
+                    "descriptionEn" to newAuction.descriptionEn,
+                    "descriptionAm" to newAuction.descriptionAm,
+                    "category" to newAuction.category.name,
+                    "imageUrl" to newAuction.imageUrl,
+                    "currentBid" to 0.0,
+                    "endTimeEpochMs" to newAuction.endTimeEpochMs,
+                    "totalBids" to 0,
+                    "isEnded" to false
+                )
+                fs.collection("auctions").document(newAuction.id).set(data)
+            } catch (e: Exception) {
+                Log.e("AddisBidRepo", "Error saving auction to Firestore", e)
+            }
+        }
     }
 
     // Admin: End Auction manually
@@ -397,6 +546,7 @@ class CheretaRepository private constructor() {
                 )
             } else item
         }
+        firestore?.collection("auctions")?.document(auctionId)?.update("isEnded", true)
     }
 
     // Admin: Update Merchant Settings
@@ -406,6 +556,118 @@ class CheretaRepository private constructor() {
             telebirrMerchantPhone = merchantPhone,
             telebirrShortcode = shortcode
         )
+    }
+
+    fun initFirestore(databaseId: String) {
+        if (firestore != null) return
+        try {
+            val fs = FirebaseFirestore.getInstance(databaseId)
+            firestore = fs
+            listenToCloudData(fs)
+        } catch (e: Exception) {
+            Log.e("AddisBidRepo", "Error initializing Firestore", e)
+        }
+    }
+
+    private fun listenToCloudData(fs: FirebaseFirestore) {
+        try {
+            // Listen to real-time Auctions
+            auctionsListener = fs.collection("auctions")
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.w("AddisBidRepo", "Auctions listener error", error)
+                        return@addSnapshotListener
+                    }
+                    if (snapshot != null && !snapshot.isEmpty) {
+                        val items = snapshot.documents.mapNotNull { doc ->
+                            try {
+                                AuctionItem(
+                                    id = doc.getString("id") ?: doc.id,
+                                    titleEn = doc.getString("titleEn") ?: "",
+                                    titleAm = doc.getString("titleAm") ?: "",
+                                    descriptionEn = doc.getString("descriptionEn") ?: "",
+                                    descriptionAm = doc.getString("descriptionAm") ?: "",
+                                    category = try {
+                                        AuctionCategory.valueOf(doc.getString("category") ?: "PHONES")
+                                    } catch (e: Exception) {
+                                        AuctionCategory.PHONES
+                                    },
+                                    imageUrl = doc.getString("imageUrl") ?: "phone",
+                                    startingPrice = 0.0,
+                                    currentBid = doc.getDouble("currentBid") ?: 0.0,
+                                    minBidIncrement = 0.0,
+                                    endTimeEpochMs = doc.getLong("endTimeEpochMs") ?: (System.currentTimeMillis() + 86400000L),
+                                    highestBidderId = doc.getString("highestBidderId"),
+                                    highestBidderName = doc.getString("highestBidderName"),
+                                    totalBids = (doc.getLong("totalBids") ?: 0L).toInt(),
+                                    participationFee = 0.0,
+                                    isEnded = doc.getBoolean("isEnded") ?: false,
+                                    winnerId = doc.getString("winnerId"),
+                                    winnerName = doc.getString("winnerName")
+                                )
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        if (items.isNotEmpty()) {
+                            _auctions.value = items
+                        }
+                    } else if (snapshot != null && snapshot.isEmpty) {
+                        // Seed cloud Firestore with initial auctions
+                        _auctions.value.forEach { item ->
+                            val data = mapOf(
+                                "id" to item.id,
+                                "titleEn" to item.titleEn,
+                                "titleAm" to item.titleAm,
+                                "descriptionEn" to item.descriptionEn,
+                                "descriptionAm" to item.descriptionAm,
+                                "category" to item.category.name,
+                                "imageUrl" to item.imageUrl,
+                                "currentBid" to item.currentBid,
+                                "endTimeEpochMs" to item.endTimeEpochMs,
+                                "totalBids" to item.totalBids,
+                                "isEnded" to item.isEnded
+                            )
+                            fs.collection("auctions").document(item.id).set(data, SetOptions.merge())
+                        }
+                    }
+                }
+
+            // Listen to real-time Transactions (Telebirr deposits)
+            transactionsListener = fs.collection("transactions")
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.w("AddisBidRepo", "Transactions listener error", error)
+                        return@addSnapshotListener
+                    }
+                    if (snapshot != null && !snapshot.isEmpty) {
+                        val txs = snapshot.documents.mapNotNull { doc ->
+                            try {
+                                TelebirrTransaction(
+                                    id = doc.getString("id") ?: doc.id,
+                                    userId = doc.getString("userId") ?: "",
+                                    userName = doc.getString("userName") ?: "",
+                                    userPhone = doc.getString("userPhone") ?: "",
+                                    telebirrPhone = doc.getString("telebirrPhone") ?: "",
+                                    transactionId = doc.getString("transactionId") ?: "",
+                                    amount = doc.getDouble("amount") ?: 0.0,
+                                    type = TransactionType.valueOf(doc.getString("type") ?: TransactionType.DEPOSIT.name),
+                                    status = TransactionStatus.valueOf(doc.getString("status") ?: TransactionStatus.PENDING.name),
+                                    timestampEpochMs = doc.getLong("timestampEpochMs") ?: System.currentTimeMillis(),
+                                    note = doc.getString("note") ?: ""
+                                )
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        if (txs.isNotEmpty()) {
+                            _transactions.value = txs
+                        }
+                    }
+                }
+        } catch (e: Exception) {
+            Log.e("AddisBidRepo", "Failed to setup Firestore listeners", e)
+        }
     }
 
     companion object {

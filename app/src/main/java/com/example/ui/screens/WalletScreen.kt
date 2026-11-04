@@ -103,7 +103,7 @@ fun WalletScreen(
                                 )
                             }
 
-                            if (currentUser.role == UserRole.ADMIN) {
+                            if (repository.isAdminUser()) {
                                 Surface(
                                     color = TelebirrGold,
                                     shape = RoundedCornerShape(8.dp),
@@ -120,21 +120,28 @@ fun WalletScreen(
                             }
                         }
 
-                        Column {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                text = if (lang == Language.AMHARIC) "አጠቃላይ ያለዎት ሂሳብ" else "Available Balance",
+                                text = if (lang == Language.AMHARIC) "አጠቃላይ ቀሪ ሒሳብ" else "Available Balance",
+                                color = Color.White.copy(alpha = 0.85f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                GoldCoinBadge(size = 32.dp)
+                                Text(
+                                    text = UiFormatters.formatETB(currentUser.balance),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+                            Text(
+                                text = "${currentUser.name} • ${currentUser.phone}",
                                 color = Color.White.copy(alpha = 0.8f),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = UiFormatters.formatETB(currentUser.balance),
-                                color = Color.White,
-                                style = MaterialTheme.typography.headlineLarge,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                            Text(
-                                text = "${currentUser.name} (${currentUser.phone})",
-                                color = Color.White.copy(alpha = 0.7f),
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }

@@ -6,11 +6,13 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -34,6 +36,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        try {
+            val dbId = getString(R.string.firestore_database_id)
+            CheretaRepository.getInstance().initFirestore(dbId)
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Firestore init skipped or failed", e)
+        }
+
         setContent {
             CheretaTelebirrTheme {
                 MainAppScreen()
@@ -80,16 +90,16 @@ fun MainAppScreen() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Surface(
-                            shape = CircleShape,
-                            color = TelebirrPrimary
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color.Transparent,
+                            modifier = Modifier.size(36.dp)
                         ) {
-                            Icon(
-                                Icons.Default.PlayCircle,
-                                contentDescription = "Logo",
-                                tint = Color.White,
+                            Image(
+                                painter = painterResource(id = R.drawable.addis_bid_clean_icon_1793805385988),
+                                contentDescription = "Addis Bid Logo",
                                 modifier = Modifier
-                                    .padding(6.dp)
-                                    .size(20.dp)
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(10.dp))
                             )
                         }
                         Column {
@@ -112,9 +122,9 @@ fun MainAppScreen() {
                     }
                 },
                 actions = {
-                    // Balance chip
+                    // Balance chip with Gold Coin
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier
                             .clickable { selectedNavIndex = 1 }
@@ -122,20 +132,15 @@ fun MainAppScreen() {
                             .testTag("top_bar_balance_chip")
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Icon(
-                                Icons.Default.AccountBalanceWallet,
-                                contentDescription = null,
-                                tint = TelebirrGreen,
-                                modifier = Modifier.size(16.dp)
-                            )
+                            GoldCoinBadge(size = 20.dp)
                             Text(
                                 text = UiFormatters.formatETB(currentUser.balance),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -282,19 +287,19 @@ fun MainAppScreen() {
                     modifier = Modifier.testTag("nav_item_admin")
                 )
 
-                // Tab 4: Guide (መመሪያ)
+                // Tab 4: Guide (ደንቦችና እርዳታ)
                 NavigationBarItem(
                     selected = selectedNavIndex == 4,
                     onClick = { selectedNavIndex = 4 },
                     icon = {
                         Icon(
-                            if (selectedNavIndex == 4) Icons.Filled.Code else Icons.Outlined.Code,
-                            contentDescription = "GitHub & Guide"
+                            if (selectedNavIndex == 4) Icons.Filled.HelpOutline else Icons.Outlined.HelpOutline,
+                            contentDescription = "Help & Rules"
                         )
                     },
                     label = {
                         Text(
-                            text = "GitHub",
+                            text = if (lang == Language.AMHARIC) "እርዳታ" else "Help",
                             fontSize = 11.sp,
                             fontWeight = if (selectedNavIndex == 4) FontWeight.Bold else FontWeight.Normal
                         )
