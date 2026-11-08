@@ -53,6 +53,19 @@
         "note": { "type": "string" }
       },
       "required": ["id", "userId", "amount", "status", "timestampEpochMs"]
+    },
+    "UserWallet": {
+      "title": "UserWallet",
+      "description": "User wallet balance and identity",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "balance": { "type": "number" },
+        "phone": { "type": "string" },
+        "name": { "type": "string" },
+        "lastUpdatedEpochMs": { "type": "number" }
+      },
+      "required": ["userId", "balance"]
     }
   },
   "firestore": {
@@ -67,6 +80,10 @@
     "/transactions/{transactionId}": {
       "schema": "TelebirrTransaction",
       "description": "Telebirr verification transactions"
+    },
+    "/wallets/{userId}": {
+      "schema": "UserWallet",
+      "description": "User balance records"
     }
   }
 }

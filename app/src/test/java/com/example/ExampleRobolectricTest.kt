@@ -52,4 +52,16 @@ class CheretaRepositoryTest {
         assertEquals(UserRole.USER, repository.currentUser.value.role)
         assertEquals(false, repository.isAdminUser())
     }
+
+    @Test
+    fun testViewModelIntegration() {
+        val viewModel = com.example.viewmodel.AddisBidViewModel()
+        assertTrue(viewModel.auctions.value.isNotEmpty())
+        assertEquals("0912345678", viewModel.currentUser.value.phone)
+
+        // Test ViewModel bidding action
+        val firstAuction = viewModel.auctions.value.first()
+        val result = viewModel.placeBid(firstAuction.id)
+        assertTrue(result is CheretaRepository.BidResult.Success)
+    }
 }

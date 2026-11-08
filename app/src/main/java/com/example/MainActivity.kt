@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.*
 import com.example.repository.CheretaRepository
+import com.example.viewmodel.AddisBidViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.components.*
 import com.example.ui.screens.*
 import com.example.ui.theme.*
@@ -54,12 +57,13 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainAppScreen() {
-    val repository = remember { CheretaRepository.getInstance() }
-    val lang by repository.language.collectAsState()
-    val currentUser by repository.currentUser.collectAsState()
-    val transactions by repository.transactions.collectAsState()
-    val currentTime by repository.currentTime.collectAsState()
+fun MainAppScreen(
+    viewModel: AddisBidViewModel = viewModel()
+) {
+    val lang by viewModel.language.collectAsStateWithLifecycle()
+    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
+    val transactions by viewModel.transactions.collectAsStateWithLifecycle()
+    val currentTime by viewModel.currentTime.collectAsStateWithLifecycle()
 
     var selectedNavIndex by remember { mutableStateOf(0) }
     var selectedAuctionForDetail by remember { mutableStateOf<AuctionItem?>(null) }
@@ -83,112 +87,115 @@ fun MainAppScreen() {
             .fillMaxSize()
             .testTag("main_app_scaffold"),
         topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color.Transparent,
-                            modifier = Modifier.size(36.dp)
+            Column {
+                TopAppBar(
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.addis_bid_clean_icon_1793805385988),
-                                contentDescription = "Addis Bid Logo",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(10.dp))
-                            )
-                        }
-                        Column {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = Color.Transparent,
+                                modifier = Modifier.size(36.dp)
                             ) {
-                                Text(
-                                    text = if (lang == Language.AMHARIC) "አዲስ ቢድ" else "Addis Bid",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 18.sp
+                                Image(
+                                    painter = painterResource(id = R.drawable.addis_bid_clean_icon_1793805385988),
+                                    contentDescription = "Addis Bid Logo",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(10.dp))
                                 )
                             }
-                            Text(
-                                text = if (lang == Language.AMHARIC) "የጨረታ መድረክ" else "Bidding Platform",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Column {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = if (lang == Language.AMHARIC) "አዲስ ቢድ" else "Addis Bid",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 18.sp
+                                    )
+                                }
+                                Text(
+                                    text = if (lang == Language.AMHARIC) "የጨረታ መድረክ" else "Bidding Platform",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
-                    }
-                },
-                actions = {
-                    // Balance chip with Gold Coin
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier
-                            .clickable { selectedNavIndex = 1 }
-                            .padding(end = 6.dp)
-                            .testTag("top_bar_balance_chip")
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            GoldCoinBadge(size = 20.dp)
-                            Text(
-                                text = UiFormatters.formatETB(currentUser.balance),
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    // Language Switcher Button (አማ / EN)
-                    FilledTonalButton(
-                        onClick = {
-                            val nextLang = if (lang == Language.AMHARIC) Language.ENGLISH else Language.AMHARIC
-                            repository.setLanguage(nextLang)
-                        },
-                        shape = RoundedCornerShape(10.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                        modifier = Modifier
-                            .padding(end = 4.dp)
-                            .testTag("lang_toggle_button")
-                    ) {
-                        Text(
-                            text = if (lang == Language.AMHARIC) "EN" else "አማ",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 12.sp
-                        )
-                    }
-
-                    // Profile / Account switch button
-                    IconButton(
-                        onClick = { showAuthDialog = true },
-                        modifier = Modifier.testTag("profile_button")
-                    ) {
+                    },
+                    actions = {
+                        // Balance chip with Gold Coin
                         Surface(
-                            shape = CircleShape,
-                            color = if (currentUser.role == UserRole.ADMIN) TelebirrGold else MaterialTheme.colorScheme.primaryContainer
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier
+                                .clickable { selectedNavIndex = 1 }
+                                .padding(end = 6.dp)
+                                .testTag("top_bar_balance_chip")
                         ) {
-                            Icon(
-                                imageVector = if (currentUser.role == UserRole.ADMIN) Icons.Default.AdminPanelSettings else Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = if (currentUser.role == UserRole.ADMIN) Color.Black else MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .padding(6.dp)
-                                    .size(18.dp)
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                GoldCoinBadge(size = 20.dp)
+                                Text(
+                                    text = UiFormatters.formatETB(currentUser.balance),
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+
+                        // Language Switcher Button (አማ / EN)
+                        FilledTonalButton(
+                            onClick = {
+                                val nextLang = if (lang == Language.AMHARIC) Language.ENGLISH else Language.AMHARIC
+                                viewModel.setLanguage(nextLang)
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                                .testTag("lang_toggle_button")
+                        ) {
+                            Text(
+                                text = if (lang == Language.AMHARIC) "EN" else "አማ",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 12.sp
                             )
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+
+                        // Profile / Account switch button
+                        IconButton(
+                            onClick = { showAuthDialog = true },
+                            modifier = Modifier.testTag("profile_button")
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = if (currentUser.role == UserRole.ADMIN) TelebirrGold else MaterialTheme.colorScheme.primaryContainer
+                            ) {
+                                Icon(
+                                    imageVector = if (currentUser.role == UserRole.ADMIN) Icons.Default.AdminPanelSettings else Icons.Default.Person,
+                                    contentDescription = "Profile",
+                                    tint = if (currentUser.role == UserRole.ADMIN) Color.Black else MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .padding(6.dp)
+                                        .size(18.dp)
+                                )
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
-            )
+                EthiopianTricolorBar()
+            }
         },
         bottomBar = {
             NavigationBar(
@@ -257,35 +264,37 @@ fun MainAppScreen() {
                     modifier = Modifier.testTag("nav_item_my_bids")
                 )
 
-                // Tab 3: Admin (አድሚን)
-                NavigationBarItem(
-                    selected = selectedNavIndex == 3,
-                    onClick = { selectedNavIndex = 3 },
-                    icon = {
-                        BadgedBox(
-                            badge = {
-                                if (pendingCount > 0) {
-                                    Badge(containerColor = Color(0xFFEF4444)) {
-                                        Text("$pendingCount", color = Color.White)
+                // Tab 3: Admin (አድሚን) - Visible ONLY when logged in as mameboss98@gmail.com
+                if (currentUser.role == UserRole.ADMIN && currentUser.email.equals("mameboss98@gmail.com", ignoreCase = true)) {
+                    NavigationBarItem(
+                        selected = selectedNavIndex == 3,
+                        onClick = { selectedNavIndex = 3 },
+                        icon = {
+                            BadgedBox(
+                                badge = {
+                                    if (pendingCount > 0) {
+                                        Badge(containerColor = Color(0xFFEF4444)) {
+                                            Text("$pendingCount", color = Color.White)
+                                        }
                                     }
                                 }
+                            ) {
+                                Icon(
+                                    if (selectedNavIndex == 3) Icons.Filled.AdminPanelSettings else Icons.Outlined.AdminPanelSettings,
+                                    contentDescription = "Admin"
+                                )
                             }
-                        ) {
-                            Icon(
-                                if (selectedNavIndex == 3) Icons.Filled.AdminPanelSettings else Icons.Outlined.AdminPanelSettings,
-                                contentDescription = "Admin"
+                        },
+                        label = {
+                            Text(
+                                text = if (lang == Language.AMHARIC) "አድሚን" else "Admin",
+                                fontSize = 11.sp,
+                                fontWeight = if (selectedNavIndex == 3) FontWeight.Bold else FontWeight.Normal
                             )
-                        }
-                    },
-                    label = {
-                        Text(
-                            text = if (lang == Language.AMHARIC) "አድሚን" else "Admin",
-                            fontSize = 11.sp,
-                            fontWeight = if (selectedNavIndex == 3) FontWeight.Bold else FontWeight.Normal
-                        )
-                    },
-                    modifier = Modifier.testTag("nav_item_admin")
-                )
+                        },
+                        modifier = Modifier.testTag("nav_item_admin")
+                    )
+                }
 
                 // Tab 4: Guide (ደንቦችና እርዳታ)
                 NavigationBarItem(

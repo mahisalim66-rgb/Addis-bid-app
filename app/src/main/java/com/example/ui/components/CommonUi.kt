@@ -115,6 +115,19 @@ fun TelebirrLogoPill(
 }
 
 @Composable
+fun EthiopianTricolorBar(
+    modifier: Modifier = Modifier,
+    height: androidx.compose.ui.unit.Dp = 3.dp
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .background(EthiopianTricolorGradient)
+    )
+}
+
+@Composable
 fun StatusBadge(
     status: TransactionStatus,
     lang: Language,

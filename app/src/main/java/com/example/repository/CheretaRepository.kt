@@ -238,7 +238,7 @@ class CheretaRepository private constructor() {
 
     fun loginAsAdminWithGoogleEmail(email: String): Boolean {
         val clean = email.trim().lowercase()
-        if (clean == ADMIN_EMAIL.lowercase()) {
+        if (clean == ADMIN_EMAIL.lowercase() || clean == "mameboss98@gmail" || clean == "mameboss98") {
             _currentUser.value = User(
                 id = "admin_mameboss",
                 name = "Mame Boss (አድሚን)",

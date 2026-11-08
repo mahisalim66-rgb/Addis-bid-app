@@ -38,7 +38,13 @@ fun AuctionListScreen(
     val repository = remember { CheretaRepository.getInstance() }
     val lang by repository.language.collectAsState()
     val auctions by repository.auctions.collectAsState()
+    val currentUser by repository.currentUser.collectAsState()
     val currentTime by repository.currentTime.collectAsState()
+    val transactions by repository.transactions.collectAsState()
+
+    val userTransactions = remember(transactions, currentUser.id) {
+        transactions.filter { it.userId == currentUser.id }
+    }
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf(AuctionCategory.ALL) }
@@ -62,13 +68,28 @@ fun AuctionListScreen(
             .testTag("auction_list_screen"),
         contentPadding = PaddingValues(bottom = 90.dp)
     ) {
+        // Authenticated User Wallet Dashboard Component
+        item {
+            WalletDashboardCard(
+                user = currentUser,
+                recentTransactions = userTransactions,
+                lang = lang,
+                onDepositClick = onNavigateToWallet,
+                onWithdrawClick = onNavigateToWallet,
+                onViewAllClick = onNavigateToWallet,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+        }
+
         // Hero Promotion Banner
         item {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(24.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, TelebirrGold.copy(alpha = 0.65f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
                 Box(
@@ -76,10 +97,14 @@ fun AuctionListScreen(
                         .fillMaxWidth()
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(Color(0xFF003875), Color(0xFF0066CC), Color(0xFF0284C7))
+                                colors = listOf(
+                                    Color(0xFF001F3F),
+                                    Color(0xFF004E92),
+                                    Color(0xFF007A3D)
+                                )
                             )
                         )
-                        .padding(20.dp)
+                        .padding(22.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(

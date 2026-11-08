@@ -911,6 +911,7 @@ fun AdminLockGate(
 ) {
     val repository = remember { CheretaRepository.getInstance() }
     var emailInput by remember { mutableStateOf("mameboss98@gmail.com") }
+    var passwordInput by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Box(
@@ -998,8 +999,33 @@ fun AdminLockGate(
                     supportingText = errorMessage?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
                 )
 
+                OutlinedTextField(
+                    value = passwordInput,
+                    onValueChange = {
+                        passwordInput = it
+                        errorMessage = null
+                    },
+                    label = { Text(if (lang == Language.AMHARIC) "የአድሚን የይለፍ ቃል (Password)" else "Admin Password") },
+                    placeholder = { Text("••••••••") },
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Password
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().testTag("admin_password_input"),
+                    isError = errorMessage != null
+                )
+
                 Button(
                     onClick = {
+                        if (passwordInput != "Mame@2026") {
+                            errorMessage = if (lang == Language.AMHARIC)
+                                "የተሳሳተ የይለፍ ቃል! እባክዎ ትክክለኛውን የአድሚን የይለፍ ቃል ያስገቡ።"
+                            else
+                                "Incorrect password! Please enter the valid admin password."
+                            return@Button
+                        }
                         val ok = repository.loginAsAdminWithGoogleEmail(emailInput)
                         if (ok) {
                             errorMessage = null

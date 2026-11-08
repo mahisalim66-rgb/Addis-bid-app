@@ -1,6 +1,5 @@
 package com.example.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -8,44 +7,79 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = TelebirrPrimary,
-    onPrimary = Color.White,
-    primaryContainer = TelebirrPrimaryDark,
-    onPrimaryContainer = Color.White,
-    secondary = TelebirrGold,
-    onSecondary = Color.Black,
-    secondaryContainer = TelebirrGoldDark,
-    onSecondaryContainer = Color.White,
-    tertiary = TelebirrGreen,
-    onTertiary = Color.White,
-    background = DarkBackground,
+// =========================================================================
+// Centralized Material3 ColorScheme with Ethiopian-Inspired Palette
+// Blue (Abbay/Telebirr), Green (Adey/Fertility), Yellow (Sun/Gold), Red (Strength)
+// =========================================================================
+
+val EthiopianDarkColorScheme = darkColorScheme(
+    // 1. Blue (Primary Brand)
+    primary = EthiopianBlueLight,
+    onPrimary = Color(0xFF002244),
+    primaryContainer = EthiopianBlueContainerDark,
+    onPrimaryContainer = Color(0xFFBAE6FD),
+
+    // 2. Yellow (Secondary / Gold Rewards)
+    secondary = EthiopianYellowPrimary,
+    onSecondary = Color(0xFF3B2700),
+    secondaryContainer = EthiopianYellowContainerDark,
+    onSecondaryContainer = Color(0xFFFEF08A),
+
+    // 3. Green (Tertiary / Verification & Growth)
+    tertiary = EthiopianGreenLight,
+    onTertiary = Color(0xFF00381B),
+    tertiaryContainer = EthiopianGreenContainerDark,
+    onTertiaryContainer = Color(0xFFA7F3D0),
+
+    // 4. Red (Error / Live Countdown / Urgent)
+    error = EthiopianRedLight,
+    onError = Color(0xFF450A0A),
+    errorContainer = EthiopianRedContainerDark,
+    onErrorContainer = Color(0xFFFECACA),
+
+    // Surfaces & Obsidian Black Canvas
+    background = ObsidianMidnight,
     onBackground = TextPrimaryDark,
-    surface = DarkSurface,
+    surface = DeepNavySurface,
     onSurface = TextPrimaryDark,
-    surfaceVariant = DarkSurfaceVariant,
+    surfaceVariant = SlateCardSurface,
     onSurfaceVariant = Color(0xFFCBD5E1),
-    outline = DarkCardBorder
+    outline = SlateCardBorder
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = TelebirrPrimary,
+val EthiopianLightColorScheme = lightColorScheme(
+    // 1. Blue (Primary Brand)
+    primary = EthiopianBluePrimary,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFE0F2FE),
-    onPrimaryContainer = Color(0xFF0369A1),
-    secondary = TelebirrGold,
+    primaryContainer = EthiopianBlueContainerLight,
+    onPrimaryContainer = EthiopianBlueDark,
+
+    // 2. Yellow (Secondary / Gold Rewards)
+    secondary = EthiopianYellowPrimary,
     onSecondary = Color.Black,
-    secondaryContainer = Color(0xFFFEF3C7),
-    onSecondaryContainer = Color(0xFF92400E),
-    tertiary = TelebirrGreen,
+    secondaryContainer = EthiopianYellowContainerLight,
+    onSecondaryContainer = EthiopianYellowDark,
+
+    // 3. Green (Tertiary / Verification & Growth)
+    tertiary = EthiopianGreenPrimary,
     onTertiary = Color.White,
-    background = LightBackground,
+    tertiaryContainer = EthiopianGreenContainerLight,
+    onTertiaryContainer = EthiopianGreenDark,
+
+    // 4. Red (Error / Live Countdown / Urgent)
+    error = EthiopianRedPrimary,
+    onError = Color.White,
+    errorContainer = EthiopianRedContainerLight,
+    onErrorContainer = EthiopianRedDark,
+
+    // Surfaces & Porcelain White Canvas
+    background = PorcelainCanvas,
     onBackground = TextPrimaryLight,
-    surface = LightSurface,
+    surface = PureWhiteSurface,
     onSurface = TextPrimaryLight,
-    surfaceVariant = LightSurfaceVariant,
+    surfaceVariant = SoftGraySurfaceVariant,
     onSurfaceVariant = TextSecondaryLight,
-    outline = LightCardBorder
+    outline = SubtleBorderLight
 )
 
 @Composable
@@ -53,8 +87,7 @@ fun CheretaTelebirrTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    // We intentionally deliver an ultra-sleek, immersive fintech theme
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = if (darkTheme) EthiopianDarkColorScheme else EthiopianLightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
